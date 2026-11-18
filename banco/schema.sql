@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS despesas (
     categoria VARCHAR(20) NOT NULL,
     data_despesa DATE NOT NULL,
     conferida BOOLEAN NOT NULL DEFAULT FALSE,
-    criada_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    criada_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_descricao
         CHECK (CHAR_LENGTH(TRIM(descricao)) >= 3),

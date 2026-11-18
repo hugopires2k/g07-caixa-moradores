@@ -16,7 +16,7 @@ A tabela `despesas` armazena as informações financeiras cadastradas no sistema
 | categoria | VARCHAR(20) | Categoria da despesa |
 | data_despesa | DATE | Data em que ocorreu a despesa |
 | conferida | BOOLEAN | Indica se a despesa foi conferida |
-| criada_em | TIMESTAMP | Data e horário de criação do registro |
+| criada_em | TIMESTAMPTZ | Data e horário de criação do registro, com informação de fuso horário |
 
 ## 3. Categorias permitidas
 
