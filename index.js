@@ -11,18 +11,18 @@ const pool = new Pool({
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
-// 1. Rota de Health Check (Testa a conexão com o banco)
-app.get('/health', async (req, res) => {
+// 1. Health Check (liveness): não depende do banco, usado pelo Render e pelo CI
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', iniciado_em: new Date().toISOString() });
+});
+
+// 1b. Health Check do banco (readiness): testa a conexão com o Postgres
+app.get('/health/db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
-    res.json({
-      status: 'OK',
-      iniciado_em: new Date().toISOString(),
-      banco_conectado: true,
-      servidor_tempo: result.rows[0].now
-    });
+    res.json({ status: 'ok', banco_conectado: true, servidor_tempo: result.rows[0].now });
   } catch (err) {
-    res.status(503).json({ status: 'ERRO', erro: err.message });
+    res.status(503).json({ status: 'erro', banco_conectado: false, erro: err.message });
   }
 });
 
