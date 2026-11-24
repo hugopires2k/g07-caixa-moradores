@@ -1,13 +1,14 @@
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const { Pool } = require('pg');
 
 const app = express();
 app.use(express.json());
 
-// Conexão com o banco (usa a variável de ambiente DATABASE_URL da Azure ou local)
+// Conexão com o banco. SSL só quando DATABASE_SSL=true (produção na nuvem).
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 // 1. Rota de Health Check (Testa a conexão com o banco)
@@ -29,9 +30,14 @@ app.get('/health', async (req, res) => {
 app.post('/api/despesas', async (req, res) => {
   const { descricao, valor, categoria, data_despesa } = req.body;
 
-  // Validação simples (CA1 e CA2)
-  if (!valor || valor <= 0) {
-    return res.status(400).json({ erro: 'O valor deve ser maior que zero.' });
+  // Validação (CA1: valor 0, -5, 12,345 -> 400)
+  if (valor === undefined || valor === null || !/^\d+(\.\d{1,2})?$/.test(String(valor)) || Number(valor) <= 0) {
+    return res.status(400).json({ erro: 'O valor deve ser maior que zero e ter no máximo 2 casas decimais.' });
+  }
+
+  // Validação (CA2: data futura -> 400)
+  if (data_despesa && new Date(data_despesa) > new Date()) {
+    return res.status(400).json({ erro: 'A data da despesa não pode ser futura.' });
   }
 
   try {
@@ -53,15 +59,12 @@ app.get('/api/totais', async (req, res) => {
   const { de, ate } = req.query;
 
   try {
-    // Totais agrupados por categoria
     const porCategoriaQuery = `
       SELECT categoria, SUM(valor) as total_categoria 
       FROM despesas 
       WHERE data_despesa BETWEEN $1 AND $2 
       GROUP BY categoria;
     `;
-    
-    // Total geral do período
     const geralQuery = `
       SELECT SUM(valor) as total_geral 
       FROM despesas 
@@ -82,6 +85,11 @@ app.get('/api/totais', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
+
+module.exports = app;
+module.exports.pool = pool;
