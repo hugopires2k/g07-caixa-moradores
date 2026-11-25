@@ -1,34 +1,60 @@
 @base = http://localhost:3000
 
-### Health (testa o banco)
+### 1. Health Check (testa o servidor)
 GET {{base}}/health
 
-### Cadastrar despesa (201)
+### 2. Health Check do Banco (testa a conexão real com o Postgres)
+GET {{base}}/health/db
+
+### 3. Cadastrar despesa com sucesso (201)
 POST {{base}}/api/despesas
 Content-Type: application/json
 
-{"descricao":"Troca de lâmpadas (fictício)","valor":10.10,"categoria":"manutencao","data_despesa":"2026-10-20"}
+{
+  "descricao": "Troca de lâmpadas (fictício)",
+  "valor": 10.10,
+  "categoria": "manutencao",
+  "data_despesa": "2026-10-20"
+}
 
-### Negativo: valor 0 (400)
+### 4. Erro: Cadastrar com valor zero (400)
 POST {{base}}/api/despesas
 Content-Type: application/json
 
-{"descricao":"Teste","valor":0,"categoria":"outros","data_despesa":"2026-10-20"}
+{
+  "descricao": "Teste valor zero",
+  "valor": 0,
+  "categoria": "outros",
+  "data_despesa": "2026-10-20"
+}
 
-### Listar por período e categoria
+### 5. Listar despesas (com filtros opcionais de período e categoria)
 GET {{base}}/api/despesas?de=2026-10-01&ate=2026-10-31&categoria=manutencao
 
-### Totais por categoria e geral (calculados no banco)
+### 6. Consultar totais por categoria e total geral calculados no banco (Regra Central)
 GET {{base}}/api/totais?de=2026-10-01&ate=2026-10-31
 
-### Marcar como conferida
+### 7. Marcar despesa como conferida (ID 1)
 PATCH {{base}}/api/despesas/1/conferir
 
-### Editar despesa não conferida
+### 8. Tentar editar despesa conferida (Deve retornar 409 Conflict)
 PUT {{base}}/api/despesas/1
 Content-Type: application/json
 
-{"descricao":"Nova descrição","valor":12.50,"categoria":"limpeza"}
+{
+  "descricao": "Tentando alterar",
+  "valor": 15.00,
+  "categoria": "manutencao",
+  "data_despesa": "2026-10-20"
+}
 
-### Excluir despesa
-DELETE {{base}}/api/despesas/1
+### 9. Editar despesa não conferida (Sucesso, se o ID não estiver conferido)
+PUT {{base}}/api/despesas/2
+Content-Type: application/json
+
+{
+  "descricao": "Descrição atualizada com sucesso",
+  "valor": 25.50,
+  "categoria": "limpeza",
+  "data_despesa": "2026-10-20"
+}
