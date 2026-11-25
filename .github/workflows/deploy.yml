@@ -1,0 +1,23 @@
+name: Deploy
+
+# Roda sozinho depois que o CI passa na branch main.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar deploy no Render
+        run: curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      - name: Verificar saúde após o deploy
+        run: |
+          sleep 90
+          curl --fail --retry 10 --retry-delay 15 --retry-all-errors "${{ secrets.APP_URL }}/health"

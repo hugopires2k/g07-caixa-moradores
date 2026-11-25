@@ -1,0 +1,34 @@
+@base = http://localhost:3000
+
+### Health (testa o banco)
+GET {{base}}/health
+
+### Cadastrar despesa (201)
+POST {{base}}/api/despesas
+Content-Type: application/json
+
+{"descricao":"Troca de lâmpadas (fictício)","valor":10.10,"categoria":"manutencao","data_despesa":"2026-10-20"}
+
+### Negativo: valor 0 (400)
+POST {{base}}/api/despesas
+Content-Type: application/json
+
+{"descricao":"Teste","valor":0,"categoria":"outros","data_despesa":"2026-10-20"}
+
+### Listar por período e categoria
+GET {{base}}/api/despesas?de=2026-10-01&ate=2026-10-31&categoria=manutencao
+
+### Totais por categoria e geral (calculados no banco)
+GET {{base}}/api/totais?de=2026-10-01&ate=2026-10-31
+
+### Marcar como conferida
+PATCH {{base}}/api/despesas/1/conferir
+
+### Editar despesa não conferida
+PUT {{base}}/api/despesas/1
+Content-Type: application/json
+
+{"descricao":"Nova descrição","valor":12.50,"categoria":"limpeza"}
+
+### Excluir despesa
+DELETE {{base}}/api/despesas/1
