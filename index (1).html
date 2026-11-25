@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Caixa da Associação de Moradores · G07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#EEF3F1; --surface:#FFFFFF; --texto:#10231F; --muted:#587069; --borda:#DAE4E0; --linha:#EEF3F1;
+    --primaria:#0F766E; --primaria-h:#0B5F58; --foco:#14B8A6;
+    --ok:#166534; --ok-bg:#DCF5E5; --erro:#B42318; --erro-bg:#FDE7E4;
+    --hero-1:#06302C; --hero-2:#0B4A55;
+    --c-manutencao:#3B82F6; --c-limpeza:#10B981; --c-eventos:#F59E0B; --c-administrativo:#8B5CF6; --c-outros:#7C8B95;
+    --sombra:0 1px 2px rgba(6,48,44,.06), 0 8px 24px rgba(6,48,44,.07);
+    --fonte:"Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0A1110; --surface:#111B19; --texto:#E6F0ED; --muted:#8CA39D; --borda:#213330; --linha:#162321;
+      --primaria:#2DD4BF; --primaria-h:#5EEAD4; --foco:#2DD4BF;
+      --ok:#86EFAC; --ok-bg:#10301D; --erro:#FDA29B; --erro-bg:#3A1411;
+      --hero-1:#04201D; --hero-2:#08323A;
+      --sombra:0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.25);
+    }
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--texto); font-family:var(--fonte); font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  svg { width:18px; height:18px; flex:none; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  :focus-visible { outline:2px solid var(--foco); outline-offset:2px; }
+
+  /* ---------- cabeça: marca + painel do total ---------- */
+  .cabeca { background:linear-gradient(135deg, var(--hero-1), var(--hero-2)); color:#fff; position:relative; overflow:hidden; padding-bottom:84px; }
+  .cabeca::before { content:""; position:absolute; right:-120px; top:-160px; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(45,212,191,.22), transparent); pointer-events:none; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 24px; position:relative; }
+
+  .topo { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 0; }
+  .marca { display:flex; align-items:center; gap:14px; min-width:0; }
+  .logo { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; color:#fff;
+    background:linear-gradient(145deg, #14B8A6, #0F766E); box-shadow:0 6px 16px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.3); }
+  .logo svg { width:23px; height:23px; }
+  .marca b { display:block; font-size:1.05rem; font-weight:700; line-height:1.2; letter-spacing:-.01em; }
+  .marca small { color:rgba(255,255,255,.68); font-size:.8rem; }
+  .direita { display:flex; align-items:center; gap:10px; }
+  .grupo { font-size:.78rem; font-weight:600; color:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.22); padding:6px 12px; border-radius:99px; }
+  #status { white-space:nowrap; display:inline-flex; align-items:center; gap:8px; font-size:.8rem; font-weight:600; padding:6px 14px; border-radius:99px;
+    background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.16); }
+  #status::before { content:""; width:8px; height:8px; border-radius:50%; background:#FBBF24; box-shadow:0 0 0 3px rgba(251,191,36,.25); }
+  #status.ok::before { background:#4ADE80; box-shadow:0 0 0 3px rgba(74,222,128,.28); }
+  #status.erro::before { background:#F87171; box-shadow:0 0 0 3px rgba(248,113,113,.3); }
+
+  .hero { display:grid; grid-template-columns:1.25fr 1fr; gap:40px; align-items:end; padding-top:18px; }
+  .hero h1 { margin:0; font-size:.95rem; font-weight:600; color:rgba(255,255,255,.75); }
+  .total { display:block; font-size:clamp(2.4rem, 6vw, 3.9rem); font-weight:800; letter-spacing:-.035em; line-height:1.05; margin:6px 0 4px; font-variant-numeric:tabular-nums; }
+  .periodo { color:rgba(255,255,255,.7); font-size:.9rem; }
+
+  .stats { display:flex; gap:32px; margin-top:22px; flex-wrap:wrap; }
+  .stats div small { display:block; color:rgba(255,255,255,.62); font-size:.78rem; }
+  .stats div strong { display:block; font-size:1.05rem; font-weight:700; margin-top:1px; }
+  .stats div span { color:rgba(255,255,255,.7); font-size:.82rem; }
+
+  .seg { display:flex; gap:3px; height:12px; margin-top:24px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.12); }
+  .seg i { display:block; flex:0 0 0; background:var(--cor); transition:flex-grow .7s cubic-bezier(.2,.7,.2,1); }
+  .seg i:first-child { border-radius:99px 0 0 99px; } .seg i:last-child { border-radius:0 99px 99px 0; }
+  .legenda { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px; font-size:.78rem; color:rgba(255,255,255,.75); min-height:1.2em; }
+  .legenda span { display:inline-flex; align-items:center; gap:6px; }
+  .legenda span::before { content:""; width:8px; height:8px; border-radius:3px; background:var(--cor); }
+
+  /* filtro */
+  .filtro { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); border-radius:18px; padding:18px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+  .filtro h2 { margin:0 0 12px; font-size:.9rem; font-weight:700; }
+  .datas { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .filtro label { color:rgba(255,255,255,.75); }
+  .filtro input { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.2); color:#fff; color-scheme:dark; }
+  .filtro input:focus { border-color:#5EEAD4; box-shadow:0 0 0 3px rgba(94,234,212,.25); }
+  .atalhos { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 14px; }
+  .chip { font:inherit; font-size:.8rem; font-weight:600; padding:6px 13px; border-radius:99px; border:1px solid rgba(255,255,255,.25); background:transparent; color:rgba(255,255,255,.85); cursor:pointer; transition:background .15s, color .15s; }
+  .chip:hover { background:rgba(255,255,255,.14); }
+  .chip.ativo { background:#fff; color:#06302C; border-color:#fff; }
+  .filtro .btn { width:100%; background:#fff; color:#06302C; box-shadow:none; }
+  .filtro .btn:hover { background:#D7F5EF; transform:none; }
+  #msgTotais { margin-top:10px; }
+  #msgTotais.erro { background:rgba(248,113,113,.18); color:#FECACA; }
+
+  /* ---------- conteúdo ---------- */
+  .page { max-width:1120px; margin:-56px auto 0; padding:0 24px 40px; position:relative; }
+  .colunas { display:grid; grid-template-columns:1.6fr 1fr; gap:22px; align-items:start; }
+
+  .card { background:var(--surface); border:1px solid var(--borda); border-radius:18px; box-shadow:var(--sombra); overflow:hidden; }
+  .card-h { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 22px; border-bottom:1px solid var(--borda); }
+  .card-h h2 { margin:0; font-size:1.02rem; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; }
+  .card-h h2 svg { color:var(--primaria); }
+  .card-h span { color:var(--muted); font-size:.8rem; }
+  .card-b { padding:22px; }
+
+  label { font-size:.8rem; font-weight:600; color:var(--muted); }
+  .campo { display:flex; flex-direction:column; gap:6px; min-width:0; }
+  input, select { font:inherit; padding:11px 13px; border-radius:11px; border:1px solid var(--borda); background:var(--surface); color:var(--texto); min-width:0; width:100%; transition:border-color .15s, box-shadow .15s; }
+  input::placeholder { color:var(--muted); opacity:.7; }
+  input:focus, select:focus { outline:none; border-color:var(--primaria); box-shadow:0 0 0 4px color-mix(in srgb, var(--foco) 22%, transparent); }
+  select { appearance:none; -webkit-appearance:none; padding-right:38px; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23808F8B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; }
+
+  button.btn { font:inherit; font-weight:700; padding:12px 20px; border:none; border-radius:12px; color:#fff; cursor:pointer;
+    background:linear-gradient(135deg, #14A394, #0F766E); display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 6px 16px rgba(15,118,110,.28); transition:transform .15s, box-shadow .15s, filter .15s; }
+  button.btn:hover { filter:brightness(1.06); transform:translateY(-1px); box-shadow:0 8px 20px rgba(15,118,110,.34); }
+  button.btn:active { transform:none; }
+  button.btn:disabled { opacity:.6; cursor:wait; transform:none; }
+  @media (prefers-color-scheme: dark) { .page button.btn { color:#04201D; background:linear-gradient(135deg, #5EEAD4, #2DD4BF); box-shadow:0 6px 16px rgba(45,212,191,.2); } }
+
+  /* tabela */
+  .tabela-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:.78rem; font-weight:600; color:var(--muted); padding:14px 22px 10px; background:var(--linha); }
+  td { padding:15px 22px; border-top:1px solid var(--borda); vertical-align:middle; }
+  th.n, td.n { text-align:right; white-space:nowrap; }
+  tbody tr:hover { background:color-mix(in srgb, var(--linha) 60%, transparent); }
+  .cat { display:flex; align-items:center; gap:10px; font-weight:600; }
+  .ponto { width:10px; height:10px; border-radius:3px; background:var(--cor); flex:none; }
+  .barra { height:6px; background:var(--linha); border-radius:99px; overflow:hidden; margin-top:9px; }
+  .barra i { display:block; height:100%; width:0; background:var(--cor); border-radius:99px; transition:width .7s cubic-bezier(.2,.7,.2,1); }
+  .pct { color:var(--muted); font-variant-numeric:tabular-nums; }
+  td.v { font-weight:700; font-variant-numeric:tabular-nums; }
+  tfoot td { border-top:2px solid var(--borda); font-weight:800; font-size:1.02rem; background:var(--linha); font-variant-numeric:tabular-nums; }
+  .vazio { text-align:center; color:var(--muted); padding:40px 22px; }
+
+  /* formulário */
+  .f { display:flex; flex-direction:column; gap:16px; }
+  .f2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .prefixo { position:relative; }
+  .prefixo span { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); font-weight:600; font-size:.9rem; pointer-events:none; }
+  .prefixo input { padding-left:40px; }
+  .btn-full { width:100%; padding:14px 18px; }
+  .aviso { font-size:.8rem; color:var(--muted); margin:0; }
+  .msg { font-size:.88rem; font-weight:500; border-radius:11px; }
+  .msg.ok, .msg.erro { padding:11px 14px; }
+  .msg.ok { background:var(--ok-bg); color:var(--ok); } .msg.erro { background:var(--erro-bg); color:var(--erro); }
+
+  footer { text-align:center; color:var(--muted); font-size:.78rem; padding:0 24px 32px; }
+
+  @media (max-width:900px) {
+    .hero { grid-template-columns:1fr; gap:28px; }
+    .colunas { grid-template-columns:1fr; }
+    .grupo { display:none; }
+    .cabeca { padding-bottom:76px; }
+  }
+  @media (max-width:520px) {
+    .wrap, .page { padding-left:16px; padding-right:16px; }
+    .marca small { display:none; }
+    .marca b { font-size:.95rem; }
+    .card-h span { display:none; }
+    th:nth-child(2), td:nth-child(2) { display:none; }
+    td.v, tfoot td { font-size:.95rem; }
+    .stats { gap:24px; }
+    th, td { padding-left:16px; padding-right:16px; }
+    .card-h, .card-b { padding-left:16px; padding-right:16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="cabeca">
+  <div class="wrap">
+    <header class="topo">
+      <div class="marca">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8M5 9.5V21h14V9.5M10 21v-6h4v6"/></svg></div>
+        <div><b>Caixa da Associação de Moradores</b><small>Controle de despesas e prestação de contas</small></div>
+      </div>
+      <div class="direita">
+        <span class="grupo">Grupo G07</span>
+        <span id="status" role="status">Verificando…</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Total de despesas no período</h1>
+        <strong class="total" id="kTotal">R$ 0,00</strong>
+        <div class="periodo" id="kPeriodo">—</div>
+
+        <div class="stats">
+          <div><small>Categorias com gastos</small><strong id="kQtd">0</strong><span>de 5 categorias</span></div>
+          <div><small>Maior categoria</small><strong id="kMaior">—</strong><span id="kMaiorV">&nbsp;</span></div>
+        </div>
+
+        <div class="seg" id="seg" role="img" aria-label="Distribuição dos gastos por categoria"></div>
+        <div class="legenda" id="legenda"></div>
+      </div>
+
+      <div class="filtro">
+        <h2>Período de consulta</h2>
+        <div class="datas">
+          <div class="campo"><label for="de">De</label><input id="de" type="date"></div>
+          <div class="campo"><label for="ate">Até</label><input id="ate" type="date"></div>
+        </div>
+        <div class="atalhos">
+          <button class="chip" type="button" data-atalho="mes">Este mês</button>
+          <button class="chip" type="button" data-atalho="mespassado">Mês passado</button>
+          <button class="chip" type="button" data-atalho="ano">Este ano</button>
+        </div>
+        <button class="btn" id="btnTotais" type="button">
+          <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg> Atualizar totais
+        </button>
+        <div id="msgTotais" class="msg" role="alert"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<main class="page">
+  <div class="colunas">
+    <!-- tabela de totais -->
+    <section class="card">
+      <div class="card-h">
+        <h2><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Totais por categoria</h2>
+        <span>Calculado no banco de dados</span>
+      </div>
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>Categoria</th><th class="n">Participação</th><th class="n">Total</th></tr></thead>
+          <tbody id="corpo"><tr><td colspan="3" class="vazio">Carregando…</td></tr></tbody>
+          <tfoot><tr><td>Total geral</td><td></td><td class="n" id="totalGeral">R$ 0,00</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- formulário -->
+    <section class="card">
+      <div class="card-h"><h2><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Nova despesa</h2></div>
+      <div class="card-b">
+        <div class="f">
+          <div class="campo"><label for="descricao">Descrição</label>
+            <input id="descricao" type="text" maxlength="200" placeholder="Ex.: Troca de lâmpadas (fictício)"></div>
+          <div class="f2">
+            <div class="campo"><label for="valor">Valor</label>
+              <div class="prefixo"><span>R$</span><input id="valor" type="text" inputmode="decimal" placeholder="0,00"></div></div>
+            <div class="campo"><label for="data">Data</label><input id="data" type="date"></div>
+          </div>
+          <div class="campo"><label for="categoria">Categoria</label>
+            <select id="categoria">
+              <option value="manutencao">Manutenção</option>
+              <option value="limpeza">Limpeza</option>
+              <option value="eventos">Eventos</option>
+              <option value="administrativo">Administrativo</option>
+              <option value="outros">Outros</option>
+            </select></div>
+          <button class="btn btn-full" id="btnSalvar" type="button">Salvar despesa</button>
+          <div id="msgCadastro" class="msg" role="alert"></div>
+          <p class="aviso">Use apenas dados fictícios. A data não pode ser futura.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>Projeto Cloud Challenge · Senac · Dados fictícios</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const CATS = {
+    manutencao:     { nome:'Manutenção',     cor:'var(--c-manutencao)' },
+    limpeza:        { nome:'Limpeza',        cor:'var(--c-limpeza)' },
+    eventos:        { nome:'Eventos',        cor:'var(--c-eventos)' },
+    administrativo: { nome:'Administrativo', cor:'var(--c-administrativo)' },
+    outros:         { nome:'Outros',         cor:'var(--c-outros)' }
+  };
+
+  // ---------- datas (fuso local) ----------
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const hojeD = new Date();
+  const hoje = iso(hojeD);
+  $('data').value = hoje; $('data').max = hoje;
+
+  function marcarAtalho(tipo) {
+    document.querySelectorAll('[data-atalho]').forEach((b) => b.classList.toggle('ativo', b.dataset.atalho === tipo));
+  }
+  function aplicarAtalho(tipo) {
+    const y = hojeD.getFullYear(), m = hojeD.getMonth();
+    if (tipo === 'mes')        { $('de').value = iso(new Date(y, m, 1));     $('ate').value = hoje; }
+    if (tipo === 'mespassado') { $('de').value = iso(new Date(y, m - 1, 1)); $('ate').value = iso(new Date(y, m, 0)); }
+    if (tipo === 'ano')        { $('de').value = iso(new Date(y, 0, 1));     $('ate').value = hoje; }
+    marcarAtalho(tipo);
+  }
+  aplicarAtalho('mes');
+  document.querySelectorAll('[data-atalho]').forEach((b) =>
+    b.addEventListener('click', () => { aplicarAtalho(b.dataset.atalho); carregarTotais(); }));
+  ['de', 'ate'].forEach((id) => $(id).addEventListener('input', () => marcarAtalho(null)));
+
+  // ---------- utilidades ----------
+  const dataBR = (s) => s.split('-').reverse().join('/');
+  // "1234.5" -> "R$ 1.234,50" sem converter para número (evita erro de ponto flutuante)
+  function brl(txt) {
+    let [int, dec = ''] = String(txt).split('.');
+    dec = (dec + '00').slice(0, 2);
+    int = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return 'R$ ' + int + ',' + dec;
+  }
+  // "1.234,50" -> "1234.50" | "12,5" -> "12.5" | "12.50" continua igual
+  function valorParaApi(txt) {
+    let v = txt.trim().replace(/\s/g, '');
+    if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.');
+    return v;
+  }
+  function mensagem(el, texto, tipo) { el.textContent = texto; el.className = 'msg ' + (tipo || ''); }
+  async function chamar(url, opcoes) {
+    const r = await fetch(url, opcoes);
+    let corpo = null;
+    try { corpo = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((corpo && corpo.erro) || 'Erro ' + r.status);
+    return corpo;
+  }
+
+  // ---------- saúde do banco ----------
+  chamar('/health/db')
+    .then(() => { $('status').textContent = 'Banco conectado'; $('status').className = 'ok'; })
+    .catch(() => { $('status').textContent = 'Banco indisponível'; $('status').className = 'erro'; });
+
+  // ---------- barra de distribuição (cabeçalho) ----------
+  function desenharDistribuicao(linhas, nums, soma) {
+    const seg = $('seg'), leg = $('legenda');
+    seg.innerHTML = ''; leg.innerHTML = '';
+    linhas.forEach((l, i) => {
+      const c = CATS[l.categoria] || { nome: l.categoria, cor: 'var(--c-outros)' };
+      const pct = soma ? Math.round((nums[i] / soma) * 100) : 0;
+      const s = document.createElement('i');
+      s.style.setProperty('--cor', c.cor); s.title = c.nome + ' · ' + pct + '%';
+      seg.appendChild(s);
+      requestAnimationFrame(() => { s.style.flexGrow = nums[i]; s.style.flexBasis = '0'; });
+      const t = document.createElement('span');
+      t.style.setProperty('--cor', c.cor); t.textContent = c.nome + ' ' + pct + '%';
+      leg.appendChild(t);
+    });
+  }
+
+  // ---------- totais ----------
+  async function carregarTotais() {
+    const de = $('de').value, ate = $('ate').value;
+    if (!de || !ate) return mensagem($('msgTotais'), 'Informe o período inicial e o final.', 'erro');
+    if (de > ate) return mensagem($('msgTotais'), 'O período inicial não pode ser maior que o final.', 'erro');
+    $('btnTotais').disabled = true;
+    try {
+      const d = await chamar('/api/totais?de=' + de + '&ate=' + ate);
+      mensagem($('msgTotais'), '', '');
+      const linhas = d.por_categoria;
+      const nums = linhas.map((l) => Number(l.total_categoria)); // só para barras e %, nunca para exibir dinheiro
+      const soma = nums.reduce((a, b) => a + b, 0), maior = Math.max(...nums, 0);
+
+      const corpo = $('corpo'); corpo.innerHTML = '';
+      if (!linhas.length) {
+        corpo.innerHTML = '<tr><td colspan="3" class="vazio">Nenhuma despesa neste período. Registre a primeira no formulário.</td></tr>';
+      }
+      linhas.forEach((l, i) => {
+        const c = CATS[l.categoria] || { nome: l.categoria, cor: 'var(--c-outros)' };
+        const pct = soma ? Math.round((nums[i] / soma) * 100) : 0;
+        const tr = document.createElement('tr'); tr.style.setProperty('--cor', c.cor);
+        tr.innerHTML = '<td><div class="cat"><span class="ponto"></span><span></span></div><div class="barra"><i></i></div></td>' +
+                       '<td class="n pct"></td><td class="n v"></td>';
+        tr.querySelector('.cat span:last-child').textContent = c.nome;
+        tr.querySelector('.pct').textContent = pct + '%';
+        tr.querySelector('.v').textContent = brl(l.total_categoria);
+        corpo.appendChild(tr);
+        const fill = tr.querySelector('.barra i');
+        requestAnimationFrame(() => { fill.style.width = (maior ? (nums[i] / maior) * 100 : 0) + '%'; });
+      });
+
+      desenharDistribuicao(linhas, nums, soma);
+      $('totalGeral').textContent = brl(d.total_geral);
+      $('kTotal').textContent = brl(d.total_geral);
+      $('kPeriodo').textContent = dataBR(de) + ' a ' + dataBR(ate);
+      $('kQtd').textContent = linhas.length;
+      if (linhas.length) {
+        const idx = nums.indexOf(maior);
+        $('kMaior').textContent = (CATS[linhas[idx].categoria] || { nome: linhas[idx].categoria }).nome;
+        $('kMaiorV').textContent = brl(linhas[idx].total_categoria);
+      } else { $('kMaior').textContent = '—'; $('kMaiorV').innerHTML = '&nbsp;'; }
+    } catch (e) { mensagem($('msgTotais'), e.message, 'erro'); }
+    $('btnTotais').disabled = false;
+  }
+  $('btnTotais').addEventListener('click', carregarTotais);
+
+  // ---------- cadastro ----------
+  $('btnSalvar').addEventListener('click', async () => {
+    const corpo = {
+      descricao: $('descricao').value.trim(),
+      valor: valorParaApi($('valor').value), // a API recebe ponto
+      categoria: $('categoria').value,
+      data_despesa: $('data').value
+    };
+    if (corpo.descricao.length < 3) return mensagem($('msgCadastro'), 'Informe uma descrição com pelo menos 3 caracteres.', 'erro');
+    if (!/^\d+(\.\d{1,2})?$/.test(corpo.valor) || Number(corpo.valor) <= 0)
+      return mensagem($('msgCadastro'), 'Informe um valor maior que zero, como 150,00.', 'erro');
+    $('btnSalvar').disabled = true;
+    try {
+      const nova = await chamar('/api/despesas', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo)
+      });
+      mensagem($('msgCadastro'), 'Despesa nº ' + nova.id + ' registrada: ' + brl(nova.valor) + '.', 'ok');
+      $('descricao').value = ''; $('valor').value = '';
+      carregarTotais();
+    } catch (e) { mensagem($('msgCadastro'), e.message, 'erro'); }
+    $('btnSalvar').disabled = false;
+  });
+
+  carregarTotais();
+</script>
+</body>
+</html>
