@@ -54,6 +54,76 @@ app.post('/api/despesas', async (req, res) => {
   }
 });
 
+// 4. Listar despesas com filtro por período e categoria (RF2)
+app.get('/api/despesas', async (req, res) => {
+  const { de, ate, categoria } = req.query;
+  try {
+    let query = 'SELECT * FROM despesas WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (de && ate) {
+      query += ` AND data_despesa BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+      params.push(de, ate);
+      paramIndex += 2;
+    }
+    if (categoria) {
+      query += ` AND categoria = $${paramIndex}`;
+      params.push(categoria);
+      paramIndex++;
+    }
+
+    query += ' ORDER BY data_despesa DESC';
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// 5. Marcar despesa como conferida (RF4)
+app.patch('/api/despesas/:id/conferir', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      'UPDATE despesas SET conferida = true WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ erro: 'Despesa não encontrada.' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// 6. Editar despesa não conferida (RF5 / CA5 -> Retorna 409 se estiver conferida)
+app.put('/api/despesas/:id', async (req, res) => {
+  const { id } = req.params;
+  const { descricao, valor, categoria, data_despesa } = req.body;
+
+  try {
+    const check = await pool.query('SELECT conferida FROM despesas WHERE id = $1', [id]);
+    if (check.rows.length === 0) {
+      return res.status(404).json({ erro: 'Despesa não encontrada.' });
+    }
+    if (check.rows[0].conferida) {
+      return res.status(409).json({ erro: 'Não é possível editar uma despesa já conferida.' });
+    }
+
+    const updateQuery = `
+      UPDATE despesas 
+      SET descricao = $1, valor = $2, categoria = $3, data_despesa = $4 
+      WHERE id = $5 RETURNING *;
+    `;
+    const updated = await pool.query(updateQuery, [descricao, valor, categoria, data_despesa, id]);
+    res.json(updated.rows[0]);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // 3. Totais por categoria e geral calculados no banco (Regra Central - RF3)
 app.get('/api/totais', async (req, res) => {
   const { de, ate } = req.query;
