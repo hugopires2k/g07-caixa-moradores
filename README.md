@@ -1,4 +1,4 @@
-# Caixa da Associação de Moradores · Grupo G__
+# Caixa da Associação de Moradores · Grupo G07
 
 ## Problema e usuário
 A associação presta contas todo mês, mas as despesas ficam num caderno e os totais "não fecham" por centavos. O(a) tesoureiro(a) precisa registrar despesas e emitir totais exatos por categoria e período.
