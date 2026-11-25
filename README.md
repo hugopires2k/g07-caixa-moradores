@@ -4,7 +4,7 @@
 A associação presta contas todo mês, mas as despesas ficam num caderno e os totais "não fecham" por centavos. O(a) tesoureiro(a) precisa registrar despesas e emitir totais exatos por categoria e período.
 
 ## Equipe
-Hugo Pires (DEV) · Zaion (DEV) · Israel Soares (DADOS) · Isack Otavio (DADOS) · Pedro Lucas (NUVEM) · João Victor (QA) · Alef Rafael (QA)
+Hugo Pires (DEV) · Zaion (DEV)  · Alef Rafael (DADOS) · Pedro Lucas (NUVEM) · Israel Soares (NUVEM) · João Victor (QA) · Isack Otavio (QA)
 
 ## Requisitos
 | Requisito | Status |
@@ -26,7 +26,7 @@ Ver `banco/schema.sql`.
 ```bash
 cp .env.example .env        # preencher DATABASE_URL
 psql "$DATABASE_URL" -f banco/schema.sql
-psql "$DATABASE_URL" -f banco/dados-iniciais.sql
+psql "$DATABASE_URL" -f banco/seed.sql
 npm install && npm start
 ```
 
